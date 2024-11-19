@@ -7,8 +7,8 @@
 <p>Run>  docker ps</p>
 
 <h3>Step 4: </h3>
-
-<p>Run> python manage.py kafka_producer</p>
+<p>python kafka_producer.py</p>
+<p>Run> python manage.py kafka_consumer</p>
 
 <h3>Step 5: </h3>
 
