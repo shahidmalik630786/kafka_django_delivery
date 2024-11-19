@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Location Tracking</title>
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Real-Time Location Tracking</h1>
+    <div id="map"></div>
+    <script>
+        let map;
+        let marker;
+
+        function initMap() {
+            const initialLocation = { lat: 19.07, lng: 72.877 }; 
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 10,
+                center: initialLocation,
+                restriction: {
+                    latLngBounds: {
+                        north: 20.0,
+                        south: 18.0,
+                        east: 73.9,
+                        west: 72.7
+                    },
+                    strictBounds: false
+                }
+            });
+            
+            // Initialize marker with initial location
+            marker = new google.maps.Marker({
+                position: initialLocation,
+                map: map,
+                title: 'Current Location'
+            });
+
+            // Start location updates
+            updateLocation();
+        }
+
+        function updateLocation() {
+            // Fetch location data from server
+            fetch('/data/') 
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Validate and parse location data
+                    const newLocation = {
+                        lat: parseFloat(data.latitude), 
+                        lng: parseFloat(data.longitude) 
+                    };
+
+                    // Ensure valid coordinates before updating
+                    if (!isNaN(newLocation.lat) && !isNaN(newLocation.lng)) {
+                        // Update marker position
+                        marker.setPosition(newLocation);
+                        
+                        // Center map on new location
+                        map.panTo(newLocation);
+                    } else {
+                        console.error("Invalid location data received");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error updating location:", error);
+                })
+                .finally(() => {
+                    // Schedule next update
+                    setTimeout(updateLocation, 2000);
+                });
+        }
+
+        // Expose initMap to global scope for Google Maps callback
+        window.initMap = initMap;
+    </script>
+
+    <script 
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCcVDMX8fCIq9vHIlGbktyRkG4LQ4Tj_B8&callback=initMap" 
+        async 
+        defer>
+    </script>
+</body>
+</html>
